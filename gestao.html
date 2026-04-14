@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puxa Ferro - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .sidebar-dark { background: #0f172a; }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .input-focus:focus { ring: 2px; ring-color: #fbbf24; outline: none; border-color: #fbbf24; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <div id="telaLogin" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-10 rounded-[40px] w-full max-w-md shadow-2xl border border-slate-100">
+            <div class="text-center mb-8">
+                <div class="inline-block p-4 bg-yellow-400 rounded-3xl mb-4">
+                    <i class="fas fa-dumbbell text-3xl text-slate-900"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Painel Administrativo</h2>
+                <p class="text-slate-400 font-medium">Bem-vindo à Puxa Ferro</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div class="relative">
+                    <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="usuario" placeholder="Usuário" required class="w-full bg-slate-50 p-4 pl-12 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-yellow-400 transition-all">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="password" id="password" placeholder="Senha" required class="w-full bg-slate-50 p-4 pl-12 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-yellow-400 transition-all">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-black transform active:scale-95 transition-all shadow-lg">
+                    ACESSAR SISTEMA
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <aside class="w-72 sidebar-dark text-white p-8 flex flex-col hidden md:flex">
+        <div class="mb-12">
+            <h1 class="text-2xl font-black italic tracking-tighter">PUXA<span class="text-yellow-400">FERRO</span></h1>
+        </div>
+        <nav class="flex-1 space-y-2">
+            <a href="#" class="flex items-center gap-4 p-4 bg-yellow-400 text-slate-900 rounded-2xl font-bold transition-all">
+                <i class="fas fa-users-cog"></i> Alunos
+            </a>
+        </nav>
+        <button id="btnLogout" class="flex items-center gap-4 p-4 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all font-semibold">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+    </aside>
+
+    <main id="painelPrincipal" class="flex-1 p-8 overflow-y-auto">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h2 class="text-4xl font-extrabold text-slate-900">Gestão de Alunos</h2>
+                <p class="text-slate-500 font-medium mt-1">Gerencie membros e permissões</p>
+            </div>
+            <div class="flex gap-6">
+                <div class="bg-white p-6 rounded-[32px] border border-slate-100 card-shadow min-w-[140px] text-center">
+                    <span class="text-slate-400 text-xs font-bold uppercase tracking-widest block mb-1">Membros Ativos</span>
+                    <span id="totalCount" class="text-3xl font-black text-slate-900">0</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid lg:grid-cols-12 gap-10">
+            <section class="lg:col-span-4">
+                <div class="bg-white p-8 rounded-[40px] border border-slate-100 card-shadow sticky top-8">
+                    <h3 id="formTitle" class="text-xl font-extrabold mb-8 flex items-center gap-3">
+                        <span class="w-3 h-8 bg-yellow-400 rounded-full"></span>
+                        Novo Aluno
+                    </h3>
+                    <form id="alunoForm" class="space-y-5">
+                        <input type="hidden" id="aluno_id">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 ml-2 uppercase">Nome Completo</label>
+                            <input type="text" id="nome" required class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-yellow-400 transition-all font-medium">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 ml-2 uppercase">CPF do Aluno</label>
+                            <input type="text" id="cpf_cadastro" required class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-yellow-400 transition-all font-mono">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 ml-2 uppercase">Status de Acesso</label>
+                            <select id="statusdeacesso" class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-yellow-400 transition-all font-bold appearance-none">
+                                <option value="ATIVO" class="text-green-600">ATIVO</option>
+                                <option value="BLOQUEADO" class="text-red-600">BLOQUEADO</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="btnSalvar" class="w-full bg-slate-900 text-white font-bold py-5 rounded-3xl hover:bg-black transform active:scale-95 transition-all shadow-xl">
+                            SALVAR DADOS
+                        </button>
+                        <button type="button" id="btnCancelar" onclick="resetarFormulario()" class="w-full text-slate-400 font-bold py-2 hidden hover:text-slate-600">
+                            Cancelar Edição
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="lg:col-span-8">
+                <div class="bg-white rounded-[40px] border border-slate-100 card-shadow overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50">
+                                <tr>
+                                    <th class="px-8 py-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Aluno</th>
+                                    <th class="px-8 py-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                    <th class="px-8 py-6 text-right text-xs font-bold text-slate-400 uppercase tracking-widest">Gerenciar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaAlunos" class="divide-y divide-slate-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="admin.js"></script>
+</body>
+</html>
