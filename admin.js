@@ -237,27 +237,32 @@ async function deletarAluno(cpf) {
     }
 }
 
-
 // ==========================================
-// FUNÇÃO DE PESQUISA / FILTRO
+// FUNÇÃO DE PESQUISA E FILTRO DE STATUS
 // ==========================================
 function filtrarAlunos() {
-    // 1. Pega o que o usuário digitou e transforma em minúsculo (para não diferenciar 'A' de 'a')
     const termo = document.getElementById('inputPesquisa').value.toLowerCase();
-    
-    // 2. Seleciona todas as linhas (tr) do corpo da tabela
+    const statusFiltro = document.getElementById('filtroStatus').value; // PEGA O ATIVO/BLOQUEADO/TODOS
     const linhas = tabelaAlunos.getElementsByTagName('tr');
 
-    // 3. Percorre cada linha da tabela
     for (let i = 0; i < linhas.length; i++) {
-        const textoLinha = linhas[i].innerText.toLowerCase();
+        const linha = linhas[i];
+        const textoLinha = linha.innerText.toLowerCase();
+        
+        // Verifica se a linha contém o texto da pesquisa
+        const bateComTexto = textoLinha.includes(termo);
+        
+        // Verifica se o status da linha bate com o filtro (ou se o filtro é "TODOS")
+        // O includes(statusFiltro) funciona porque o texto da linha tem a palavra ATIVO ou BLOQUEADO
+        const bateComStatus = (statusFiltro === "TODOS") || textoLinha.includes(statusFiltro.toLowerCase());
 
-        // 4. Se o termo estiver dentro do texto da linha, mostra. Se não, esconde.
-        if (textoLinha.includes(termo)) {
-            linhas[i].style.display = ""; // Mostra a linha
+        // Só mostra se bater com os DOIS filtros ao mesmo tempo
+        if (bateComTexto && bateComStatus) {
+            linha.style.display = "";
         } else {
-            linhas[i].style.display = "none"; // Esconde a linha
+            linha.style.display = "none";
         }
     }
 }
+
 iniciarApp();
