@@ -157,6 +157,10 @@ alunoForm.addEventListener('submit', async (e) => {
     const cpf = document.getElementById('cpf_cadastro').value;
     const status = document.getElementById('statusdeacesso').value;
 
+    if (cpf.length !== 11 || isNaN(cpf)) {
+        alert("O CPF deve ter exatamente 11 números e não conter letras.");
+        return; }
+
     const alunoData = { nome, cpf, status };
 
     try {
