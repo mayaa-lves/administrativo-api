@@ -237,4 +237,27 @@ async function deletarAluno(cpf) {
     }
 }
 
+
+// ==========================================
+// FUNÇÃO DE PESQUISA / FILTRO
+// ==========================================
+function filtrarAlunos() {
+    // 1. Pega o que o usuário digitou e transforma em minúsculo (para não diferenciar 'A' de 'a')
+    const termo = document.getElementById('inputPesquisa').value.toLowerCase();
+    
+    // 2. Seleciona todas as linhas (tr) do corpo da tabela
+    const linhas = tabelaAlunos.getElementsByTagName('tr');
+
+    // 3. Percorre cada linha da tabela
+    for (let i = 0; i < linhas.length; i++) {
+        const textoLinha = linhas[i].innerText.toLowerCase();
+
+        // 4. Se o termo estiver dentro do texto da linha, mostra. Se não, esconde.
+        if (textoLinha.includes(termo)) {
+            linhas[i].style.display = ""; // Mostra a linha
+        } else {
+            linhas[i].style.display = "none"; // Esconde a linha
+        }
+    }
+}
 iniciarApp();
