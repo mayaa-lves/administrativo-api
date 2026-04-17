@@ -1,25 +1,15 @@
 /**
- * ARQUIVO: admin.js (Sistema de Catraca Academia)
- * OBJETIVO: CRUD de Alunos consumindo a API da Academia
+ * ARQUIVO: admin.js (Sistema de Catraca Academia Puxa Ferro)
  */
 
-// ==========================================
-// CONFIGURAÇÕES GERAIS DA API
-// ==========================================
-
-// 🎯 [PASSO 1: Rota Base da Academia]
 const API_BASE_URL = 'https://backend-mu-gold-36.vercel.app'; 
 
 // ==========================================
 // REFERÊNCIAS DO DOM
 // ==========================================
-const loginSection = document.getElementById('telaLogin'); // Adaptado do seu HTML
-const adminSection = document.getElementById('adminSection'); 
+const telaLogin = document.getElementById('telaLogin');
 const loginForm = document.getElementById('loginForm');
 const btnLogout = document.getElementById('btnLogout');
-const userInfo = document.getElementById('userInfo');
-const loginError = document.getElementById('loginError');
-
 const alunoForm = document.getElementById('alunoForm');
 const tabelaAlunos = document.getElementById('tabelaAlunos');
 const totalCountEl = document.getElementById('totalCount');
@@ -34,97 +24,104 @@ let listaAlunosLocal = [];
 
 function iniciarApp() {
     if (tokenAtual) {
-        mostrarPainelAdmin();
+        telaLogin.classList.add('hidden');
         carregarAlunos();
     } else {
-        mostrarLogin();
+        telaLogin.classList.remove('hidden');
     }
 }
 
 // ==========================================
-// 1. AUTENTICAÇÃO (Login / Logout)
+// SISTEMA DE NOTIFICAÇÃO (Substitui o Alert)
 // ==========================================
+function notificar(mensagem, tipo = 'sucesso') {
+    const toast = document.createElement('div');
+    const bg = tipo === 'sucesso' ? 'bg-slate-900' : 'bg-red-600';
+    const icon = tipo === 'sucesso' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    
+    toast.className = `fixed bottom-8 right-8 ${bg} text-white px-6 py-4 rounded-[24px] shadow-2xl flex items-center gap-4 transform translate-y-20 opacity-0 transition-all duration-500 z-[200] border border-white/10`;
+    
+    toast.innerHTML = `
+        <i class="fas ${icon} text-yellow-400"></i>
+        <span class="font-bold tracking-tight">${mensagem}</span>
+    `;
 
+    document.body.appendChild(toast);
+
+    // Animação de entrada
+    setTimeout(() => {
+        toast.classList.remove('translate-y-20', 'opacity-0');
+    }, 100);
+
+    // Remove após 3 segundos
+    setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
+
+// ==========================================
+// 1. AUTENTICAÇÃO
+// ==========================================
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault(); 
-    
     const usuario = document.getElementById('usuario').value;
     const password = document.getElementById('password').value;
 
     try {
-        // 🎯 [PASSO 2: Login na API da Academia]
         const resposta = await fetch(`${API_BASE_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuario: usuario, senha: password }) 
+            body: JSON.stringify({ usuario, senha: password }) 
         });
 
         if (resposta.ok) {
             const dados = await resposta.json(); 
             tokenAtual = dados.token;
-
-            // 🎯 [PASSO 3: Storage da Academia]
             localStorage.setItem('token_academia', tokenAtual); 
             
-            loginForm.reset(); 
-            mostrarPainelAdmin();
-            carregarAlunos(); 
+            notificar("Acesso autorizado! Bem-vindo.");
+            setTimeout(() => window.location.reload(), 1000);
         } else {
-            alert("Acesso negado! Verifique suas credenciais.");
-            if(loginError) loginError.classList.remove('hidden');
+            notificar("Usuário ou senha inválidos.", "erro");
         }
     } catch (erro) {
-        console.error("Erro:", erro);
-        alert("Não foi possível conectar ao servidor da academia.");
+        notificar("Erro de conexão com o servidor.", "erro");
     }
 });
 
 btnLogout.addEventListener('click', () => {
-    tokenAtual = null;
     localStorage.removeItem('token_academia');
     window.location.reload(); 
 });
 
-
 // ==========================================
-// 2. CRUD: READ (Listar Alunos)
+// 2. CRUD: LISTAR (Com ícones)
 // ==========================================
 async function carregarAlunos() {
     try {
-        // 🎯 [PASSO 4: Rota de Alunos]
         const resposta = await fetch(`${API_BASE_URL}/alunos`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${tokenAtual}`
-            }
+            headers: { 'Authorization': `Bearer ${tokenAtual}` }
         });
-
-        if (resposta.status === 401 || resposta.status === 403) {
-            alert("Sessão expirada.");
-            btnLogout.click();
-            return;
-        }
 
         if (resposta.ok) {
             listaAlunosLocal = await resposta.json(); 
             renderizarTabela(); 
         }
     } catch (erro) {
-        console.error("Erro ao carregar alunos:", erro);
+        console.error(erro);
     }
 }
 
 function renderizarTabela() {
-    if (!tabelaAlunos) return;
     tabelaAlunos.innerHTML = ''; 
-    
     let ativos = 0;
 
     listaAlunosLocal.forEach(aluno => {
         if(aluno.status === "ATIVO") ativos++;
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50/50 transition-all";
+        tr.className = "hover:bg-slate-50/50 transition-all group";
         tr.innerHTML = `
             <td class="px-8 py-6">
                 <div class="font-extrabold text-slate-800">${aluno.nome}</div>
@@ -135,45 +132,46 @@ function renderizarTabela() {
                     ${aluno.status}
                 </span>
             </td>
-            <td class="px-8 py-6 text-right">
-                <button onclick="prepararEdicao(${JSON.stringify(aluno).replace(/"/g, '&quot;')})" class="text-blue-600 hover:text-blue-900 mr-3">Editar</button>
-                <button onclick="deletarAluno('${aluno.cpf}')" class="text-red-600 hover:text-red-900">Excluir</button>
+            <td class="px-8 py-6 text-right space-x-2">
+                <button onclick="prepararEdicao(${JSON.stringify(aluno).replace(/"/g, '&quot;')})" 
+                        class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 hover:bg-yellow-400 hover:text-slate-900 transition-all shadow-sm">
+                    <i class="fas fa-pen-to-square"></i>
+                </button>
+                <button onclick="deletarAluno('${aluno.cpf}')" 
+                        class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 hover:bg-red-600 hover:text-white transition-all shadow-sm">
+                    <i class="fas fa-trash"></i>
+                </button>
             </td>
         `;
         tabelaAlunos.appendChild(tr);
     });
-
-    if(totalCountEl) totalCountEl.textContent = ativos;
+    totalCountEl.textContent = ativos;
 }
 
 // ==========================================
-// 3. CRUD: CREATE e UPDATE
+// 3. CRUD: SALVAR / EDITAR
 // ==========================================
 alunoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const id = document.getElementById('aluno_id').value;
-    const nome = document.getElementById('nome').value;
-    const cpf = document.getElementById('cpf_cadastro').value;
+    const nome = document.getElementById('nome').value.trim();
+    const cpf = document.getElementById('cpf_cadastro').value.trim();
     const status = document.getElementById('statusdeacesso').value;
 
-    if (cpf.length !== 11 || isNaN(cpf)) {
-        alert("O CPF deve ter exatamente 11 números e não conter letras.");
-        return; }
+    if (cpf.length !== 11) {
+        notificar("CPF deve ter exatamente 11 dígitos.", "erro");
+        return;
+    }
 
     const alunoData = { nome, cpf, status };
 
     try {
-        let url = `${API_BASE_URL}/alunos`;
-        let metodoHTTP = 'POST'; 
+        const url = id ? `${API_BASE_URL}/alunos/${id}` : `${API_BASE_URL}/alunos`;
+        const metodo = id ? 'PUT' : 'POST';
 
-        if (id) {
-            url = `${API_BASE_URL}/alunos/${id}`;
-            metodoHTTP = 'PUT'; 
-        }
-
-        const respostaApi = await fetch(url, {
-            method: metodoHTTP,
+        const res = await fetch(url, {
+            method: metodo,
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${tokenAtual}` 
@@ -181,15 +179,15 @@ alunoForm.addEventListener('submit', async (e) => {
             body: JSON.stringify(alunoData)
         });
 
-        if (respostaApi.ok) {
-            alert(id ? "Dados do aluno atualizados!" : "Aluno cadastrado com sucesso!");
-            limparFormulario();
+        if (res.ok) {
+            notificar(id ? "Cadastro atualizado!" : "Novo aluno matriculado!");
+            resetarFormulario();
             carregarAlunos(); 
         } else {
-            alert("Erro ao salvar dados do aluno.");
+            notificar("Erro ao salvar os dados.", "erro");
         }
     } catch (erro) {
-        console.error("Erro:", erro);
+        notificar("Erro de conexão.", "erro");
     }
 });
 
@@ -199,61 +197,44 @@ function prepararEdicao(aluno) {
     document.getElementById('cpf_cadastro').value = aluno.cpf;
     document.getElementById('statusdeacesso').value = aluno.status;
 
-    formTitle.textContent = "Editando Aluno";
-    if(btnCancelar) btnCancelar.classList.remove('hidden');
+    formTitle.innerHTML = `<span class="w-3 h-8 bg-blue-500 rounded-full"></span> Editando Aluno`;
+    btnCancelar.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-if(btnCancelar) btnCancelar.addEventListener('click', limparFormulario);
-
-function limparFormulario() {
+function resetarFormulario() {
     alunoForm.reset();
     document.getElementById('aluno_id').value = '';
-    formTitle.textContent = "Novo Aluno";
-    if(btnCancelar) btnCancelar.classList.add('hidden');
+    formTitle.innerHTML = `<span class="w-3 h-8 bg-yellow-400 rounded-full"></span> Novo Aluno`;
+    btnCancelar.classList.add('hidden');
 }
 
-
 // ==========================================
-// 4. CRUD: DELETE
+// 4. CRUD: EXCLUIR
 // ==========================================
 async function deletarAluno(cpf) {
-    if (!confirm(`Deseja realmente excluir o aluno com CPF: ${cpf}?`)) return;
+    // Aqui ainda uso o confirm nativo por ser uma ação crítica de segurança
+    if (!confirm(`Tem certeza que deseja excluir o aluno do CPF ${cpf}?`)) return;
 
     try {
-        const resposta = await fetch(`${API_BASE_URL}/alunos/deletar`, {
+        const res = await fetch(`${API_BASE_URL}/alunos/deletar`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${tokenAtual}`
             },
-            body: JSON.stringify({ cpf: cpf })
+            body: JSON.stringify({ cpf })
         });
 
-        if (resposta.ok) {
+        if (res.ok) {
+            notificar("Aluno removido do sistema.");
             carregarAlunos(); 
         } else {
-            alert("Falha ao excluir aluno.");
+            notificar("Não foi possível excluir.", "erro");
         }
     } catch (erro) {
-        console.error("Erro ao excluir:", erro);
+        notificar("Erro ao tentar excluir.", "erro");
     }
 }
 
-
-// ==========================================
-// CONTROLE DE TELA
-// ==========================================
-function mostrarLogin() {
-    if(loginSection) loginSection.classList.remove('hidden');
-    if(adminSection) adminSection.classList.add('hidden');
-    if(userInfo) userInfo.classList.add('hidden');
-}
-
-function mostrarPainelAdmin() {
-    if(loginSection) loginSection.classList.add('hidden');
-    if(adminSection) adminSection.classList.remove('hidden');
-    if(userInfo) userInfo.classList.remove('hidden');
-}
-
-// Inicializa a aplicação
 iniciarApp();
