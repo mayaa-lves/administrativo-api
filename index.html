@@ -96,7 +96,7 @@
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">CPF (Apenas Números)</label>
-                            <input type="tel" id="cpf_cadastro" required maxlength="11" class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-amber-400 font-mono">
+                            <input type="tel" id="cpf_cadastro" required  minlength="11" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-amber-400 font-mono" >
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Status de Acesso</label>
