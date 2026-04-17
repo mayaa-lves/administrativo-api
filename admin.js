@@ -2,7 +2,7 @@
  * ARQUIVO: admin.js
  */
 
-const API_BASE_URL = 'https://backend-mu-gld-36.vercel.app';
+const API_BASE_URL = 'https://backend-mu-gold-36.vercel.app';
 let tokenAtual = localStorage.getItem('token_academia');
 let listaAlunosLocal = [];
 
